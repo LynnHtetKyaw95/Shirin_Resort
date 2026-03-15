@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useCreateCabin } from "./useCreateCabin";
-import { useEditCabin } from "./useEditCabin";
+import { useUpdateCabin } from "./useUpdateCabin";
 
 import Input from "../../ui/Input";
 import Form from "../../ui/Form";
@@ -47,9 +47,9 @@ const CreateCabinForm = ({ cabinToEdit = {} }) => {
   const { errors } = formState;
 
   const { isCreating, mutateCreateCabin } = useCreateCabin();
-  const { isEditing, mutateEditCabin } = useEditCabin();
+  const { isUpdating, mutateEditCabin } = useUpdateCabin();
 
-  const isWorking = isCreating || isEditing;
+  const isWorking = isCreating || isUpdating;
 
   function onSubmit(data) {
     // console.log(data);
