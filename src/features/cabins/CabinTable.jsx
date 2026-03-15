@@ -51,4 +51,5 @@ const CabinTable = () => {
     </Table>
   );
 };
+
 export default CabinTable;
