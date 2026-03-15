@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createCabin } from "../../services/apiCabin";
+import { createEditCabin } from "../../services/apiCabin";
 
 import Input from "../../ui/Input";
 import Form from "../../ui/Form";
@@ -38,14 +38,19 @@ const FormRow2 = styled.div`
   }
 `;
 
-const CreateCabinForm = () => {
+const CreateCabinForm = ({ cabinToEdit = {} }) => {
+  const { id: editID, ...editValues } = cabinToEdit;
+  const isEditSession = Boolean(editID);
+
   const queryClient = useQueryClient();
 
-  const { register, handleSubmit, reset, getValues, formState } = useForm();
+  const { register, handleSubmit, reset, getValues, formState } = useForm({
+    defaultValues: isEditSession ? editValues : {},
+  });
   const { errors } = formState;
 
-  const { isPending: isCreating, mutate } = useMutation({
-    mutationFn: (newCabin) => createCabin(newCabin),
+  const { isPending: isCreating, mutate: createCabin } = useMutation({
+    mutationFn: (newCabin) => createEditCabin(newCabin),
     onSuccess: () => {
       toast.success("New cabin successfully created");
       queryClient.invalidateQueries({
@@ -58,8 +63,30 @@ const CreateCabinForm = () => {
     },
   });
 
+  const { isPending: isEditing, mutate: editCabin } = useMutation({
+    mutationFn: ({ newCabinData, id }) => createEditCabin(newCabinData, id),
+    onSuccess: () => {
+      toast.success("Cabin successfully edited");
+      queryClient.invalidateQueries({
+        queryKey: ["cabins"],
+      });
+      reset();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const isWorking = isCreating || isEditing;
+
   function onSubmit(data) {
-    mutate({ ...data, image: data.image[0] });
+    console.log(data);
+
+    const image = typeof data.image === "string" ? data.image : data.image[0];
+
+    return isEditSession
+      ? editCabin({ newCabinData: { ...data, image }, id: editID })
+      : createCabin({ ...data, image: image });
   }
 
   function onError(errors) {
@@ -75,7 +102,7 @@ const CreateCabinForm = () => {
           {...register("name", {
             required: "This field is required",
           })}
-          disabled={isCreating}
+          disabled={isWorking}
         />
       </FormRow>
 
@@ -91,7 +118,7 @@ const CreateCabinForm = () => {
               message: "Capacity should be at least 1",
             },
           })}
-          disabled={isCreating}
+          disabled={isWorking}
         />
       </FormRow>
 
@@ -107,7 +134,7 @@ const CreateCabinForm = () => {
               message: "Capacity should be at least 1",
             },
           })}
-          disabled={isCreating}
+          disabled={isWorking}
         />
       </FormRow>
 
@@ -123,7 +150,7 @@ const CreateCabinForm = () => {
               value <= getValues().regularPrice ||
               "Discount should be less than regular price",
           })}
-          disabled={isCreating}
+          disabled={isWorking}
         />
       </FormRow>
 
@@ -135,7 +162,7 @@ const CreateCabinForm = () => {
           {...register("description", {
             required: "This field is required",
           })}
-          disabled={isCreating}
+          disabled={isWorking}
         />
       </FormRow>
 
@@ -144,7 +171,7 @@ const CreateCabinForm = () => {
           id="image"
           accept="image/*"
           {...register("image", {
-            required: "This field is required",
+            required: isEditSession ? false : "This field is required",
           })}
         />
       </FormRow>
@@ -153,8 +180,8 @@ const CreateCabinForm = () => {
         <Button variation="secondary" size="medium" type="reset">
           Cancel
         </Button>
-        <Button disabled={isCreating} variation="primary" size="medium">
-          Add cabin
+        <Button disabled={isWorking} variation="primary" size="medium">
+          {isEditSession ? "Edit cabin" : " Create new cabin"}
         </Button>
       </FormRow2>
     </Form>
