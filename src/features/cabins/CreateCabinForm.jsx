@@ -176,7 +176,7 @@ const CreateCabinForm = ({ cabinToEdit = {}, onCloseModal }) => {
         >
           Cancel
         </Button>
-        <Button disabled={isWorking} variation="primary" size="medium">
+        <Button disabled={isWorking} $variation="primary" $size="medium">
           {isEditSession ? "Edit cabin" : " Create new cabin"}
         </Button>
       </FormRow2>

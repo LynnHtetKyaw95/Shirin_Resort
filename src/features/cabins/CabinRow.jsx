@@ -41,7 +41,7 @@ const Discount = styled.div`
 const CabinRow = ({ cabin }) => {
   const { isDeleting, mutateDeleteCabin } = useDeleteCabin();
 
-  const { isCreating, mutateCreateCabin } = useCreateCabin();
+  const { mutateCreateCabin } = useCreateCabin();
 
   const {
     id: cabinID,
