@@ -27,9 +27,7 @@ export async function getFullBookings({ filter, sortBy, page = 1 }) {
     const from = (page - 1) * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
 
-    if (from >= 0 && to >= from) {
-      query = query.range(from, to);
-    }
+    query = query.range(from, to);
   }
 
   const { data, error, count } = await query;
