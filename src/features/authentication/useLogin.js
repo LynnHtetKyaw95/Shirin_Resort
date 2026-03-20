@@ -9,8 +9,8 @@ export function useLogin() {
 
   const { mutate: login, isPending } = useMutation({
     mutationFn: ({ email, password }) => loginAPI({ email, password }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ active: true });
+    onSuccess: (user) => {
+      queryClient.setQueryData(["user"], user.user);
       navigate("/dashboard", { replace: true });
     },
     onError: (error) => {
