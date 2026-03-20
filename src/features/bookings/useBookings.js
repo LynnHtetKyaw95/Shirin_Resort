@@ -1,11 +1,13 @@
+import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getFullBookings } from "../../services/apiBookings";
 import { useSearchParams } from "react-router";
 import { PAGE_SIZE } from "../../utils/constant";
+import { usePrevious } from "../../hooks/usePrevious";
 
 export function useBookings() {
   const queryClient = useQueryClient();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // FILTER
   const filterValue = searchParams.get("status");
@@ -13,6 +15,16 @@ export function useBookings() {
     !filterValue || filterValue === "all"
       ? null
       : { field: "status", value: filterValue, method: "eq" };
+
+  const prevFilter = usePrevious(filterValue);
+
+  useEffect(() => {
+    if (filterValue !== prevFilter && prevFilter !== undefined) {
+      searchParams.set("page", "1");
+      setSearchParams(searchParams);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterValue, prevFilter]);
 
   // SORT
   const sortByRaw = searchParams.get("sortBy") || "startDate-asc";
@@ -32,20 +44,22 @@ export function useBookings() {
   });
 
   // PRE-FETCHING
-  const pageCount = Math.ceil(count / PAGE_SIZE);
+  if (count) {
+    const pageCount = Math.ceil(count / PAGE_SIZE);
 
-  if (page < pageCount) {
-    queryClient.prefetchQuery({
-      queryKey: ["bookings", filter, sortBy, page + 1],
-      queryFn: () => getFullBookings({ filter, sortBy, page: page + 1 }),
-    });
-  }
+    if (page < pageCount) {
+      queryClient.prefetchQuery({
+        queryKey: ["bookings", filter, sortBy, page + 1],
+        queryFn: () => getFullBookings({ filter, sortBy, page: page + 1 }),
+      });
+    }
 
-  if (page > 1) {
-    queryClient.prefetchQuery({
-      queryKey: ["bookings", filter, sortBy, page - 1],
-      queryFn: () => getFullBookings({ filter, sortBy, page: page - 1 }),
-    });
+    if (page > 1) {
+      queryClient.prefetchQuery({
+        queryKey: ["bookings", filter, sortBy, page - 1],
+        queryFn: () => getFullBookings({ filter, sortBy, page: page - 1 }),
+      });
+    }
   }
 
   return { isPending, bookings, error, count };
