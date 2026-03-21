@@ -93,6 +93,7 @@ function SignupForm() {
           $size="medium"
           type="reset"
           disabled={isPending}
+          onClick={reset}
         >
           Cancel
         </Button>
