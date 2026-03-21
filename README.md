@@ -31,6 +31,13 @@ A full-stack resort booking web application built with React and Supabase that a
 - Delete cabins
 - Search and filter capabilities
 
+### Guest Management (Future Update)
+
+- Handles guest data and communication:
+- Securely stores guest information (name, email, phone, ID)  
+- Sends automated booking confirmation emails  
+- Tracks guest history to improve user experience  
+
 ### Booking System
 
 - Table view with all bookings displaying:
@@ -310,7 +317,7 @@ npm run preview
 
 ### High Priority
 
-- [ ] **Email Notifications**: Send confirmation emails on booking creation
+- [ ] **Guest Management**: Manage the guest information
 - [ ] **Payment Integration**: Stripe integration for online payments
 - [ ] **Calendar View**: Visual booking calendar for cabins
 - [ ] **Guest Portal**: Separate interface for guests to manage their bookings
