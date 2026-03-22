@@ -81,6 +81,7 @@ This project simulates a real-world hotel admin system, focusing on usability, s
 - Responsive design
 - Toast notifications & modals
 - Loading & error states
+- Error boundaries for graceful UI failure handling
 
 ## Tech Stack
 
@@ -143,6 +144,7 @@ shirin_resort/
 - **Custom Hooks**: Encapsulated logic for data fetching and mutations
 - **Protected Routes**: Authentication-based route guards
 - **Context API**: Lightweight state management for theme
+- **Error Boundaries**: Isolate component failures and prevent global crashes
 
 ## Installation & Setup
 
