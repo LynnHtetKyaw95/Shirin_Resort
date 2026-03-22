@@ -47,7 +47,6 @@ const CheckInBooking = () => {
     totalPrice,
     numGuests,
     hasBreakfast,
-    numNights,
     isPaid,
   } = booking;
 
