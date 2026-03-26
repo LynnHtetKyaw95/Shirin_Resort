@@ -17,6 +17,8 @@ function BookingTableOperations() {
 
       <SortedBy
         options={[
+          { value: "cabinId-asc", label: "Sort by cabin name (A-Z)" },
+          { value: "cabinId-desc", label: "Sort by cabin name (Z-A)" },
           { value: "startDate-desc", label: "Sort by date (recent first)" },
           { value: "startDate-asc", label: "Sort by date (earlier first)" },
           {

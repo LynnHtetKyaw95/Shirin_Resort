@@ -9,8 +9,10 @@ import Button from "../../ui/Button";
 import Select from "../../ui/Select";
 import { useGuests } from "../guests/useGuests";
 import { useGetAllCabins } from "../cabins/useGetAllCabins";
+import { useGetSettings } from "../settings/useGetSettings";
 import { differenceInDays } from "date-fns";
 import { useCreateBooking } from "./useCreateBooking";
+import Checkbox from "../../ui/Checkbox";
 
 const FormRow2 = styled.div`
   display: grid;
@@ -40,18 +42,24 @@ const FormRow2 = styled.div`
 `;
 
 const CreateBookingForm = ({ onCloseModal }) => {
-  const { register, handleSubmit, formState, watch, setValue, reset } = useForm({
-    defaultValues: {
-      extrasPrice: 0,
-      observations: "",
+  const { register, handleSubmit, formState, watch, setValue, reset } = useForm(
+    {
+      defaultValues: {
+        extrasPrice: 0,
+        observations: "",
+        hasBreakfast: false,
+      },
     },
-  });
+  );
   const { errors } = formState;
 
   const { createCabin } = useCreateBooking();
 
   const { guests = [], isPending: guestLoading } = useGuests();
   const { cabins = [], isPending: cabinLoading } = useGetAllCabins();
+  const { settings = {} } = useGetSettings();
+
+  const breakfastPrice = settings?.breakfastPrice || 0;
 
   const guestOptions = [
     { value: "", label: "Select guest" },
@@ -63,6 +71,7 @@ const CreateBookingForm = ({ onCloseModal }) => {
     (c) => Number(c.id) === Number(selectedCabinId),
   );
   const cabinPrice = selectedCabin?.regularPrice || 0;
+  const maxCapacity = selectedCabin?.maxCapacity || 0;
 
   const startDate = watch("startDate");
   const endDate = watch("endDate");
@@ -72,7 +81,15 @@ const CreateBookingForm = ({ onCloseModal }) => {
       : 0;
 
   const extrasPrice = watch("extrasPrice") || 0;
-  const totalPrice = cabinPrice * numNights + Number(extrasPrice);
+  const hasBreakfast = watch("hasBreakfast");
+  const numGuests = watch("numGuests") || 1;
+  const breakfastCost = hasBreakfast
+    ? breakfastPrice * numNights * numGuests
+    : 0;
+
+  const totalCabinPrice = numNights * cabinPrice;
+
+  const totalPrice = totalCabinPrice + breakfastCost + extrasPrice;
 
   function onSubmit(data) {
     const bookingData = {
@@ -83,10 +100,10 @@ const CreateBookingForm = ({ onCloseModal }) => {
       numNights: numNights,
       numGuests: data.numGuests,
       cabinPrice: cabinPrice,
-      extrasPrice: Number(data.extrasPrice) || 0,
+      extrasPrice: Number(data.extrasPrice || 0) + breakfastCost,
       totalPrice: totalPrice,
       status: "unconfirmed",
-      hasBreakfast: false,
+      hasBreakfast: data.hasBreakfast || false,
       isPaid: false,
       observations: data.observations || "",
     };
@@ -132,6 +149,35 @@ const CreateBookingForm = ({ onCloseModal }) => {
         />
       </FormRow>
 
+      <FormRow label="Num Guests" error={errors?.numGuests?.message}>
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}
+        >
+          <Input
+            type="number"
+            {...register("numGuests", {
+              valueAsNumber: true,
+              required: "This field is required",
+              min: {
+                value: 1,
+                message: "At least 1 guest is required",
+              },
+              max: {
+                value: maxCapacity,
+                message: `Maximum ${maxCapacity} guests allowed for this cabin`,
+              },
+            })}
+          />
+          {selectedCabinId && (
+            <span
+              style={{ fontSize: "1.2rem", color: "var(--color-grey-500)" }}
+            >
+              Max capacity: {maxCapacity} guests
+            </span>
+          )}
+        </div>
+      </FormRow>
+
       <FormRow label="Start Date" error={errors?.startDate?.message}>
         <Input
           type="date"
@@ -173,23 +219,20 @@ const CreateBookingForm = ({ onCloseModal }) => {
       <FormRow label="Cabin Price">
         <Input
           type="number"
-          value={watch("cabinPrice") || cabinPrice}
+          value={watch("cabinPrice") || totalCabinPrice}
           disabled={true}
         />
       </FormRow>
 
-      <FormRow label="Num Guests" error={errors?.numGuests?.message}>
-        <Input
-          type="number"
-          {...register("numGuests", {
-            valueAsNumber: true,
-            required: "This field is required",
-            min: {
-              value: 1,
-              message: "At least 1 guest is required",
-            },
-          })}
-        />
+      <FormRow label="Breakfast">
+        <Checkbox
+          id="hasBreakfast"
+          checked={hasBreakfast || false}
+          onChange={(e) => setValue("hasBreakfast", e.target.checked)}
+        >
+          Add breakfast (+${breakfastPrice} × {numNights} nights × {numGuests}{" "}
+          guests = ${breakfastCost})
+        </Checkbox>
       </FormRow>
 
       <FormRow label="Extras Price" error={errors?.extrasPrice?.message}>
